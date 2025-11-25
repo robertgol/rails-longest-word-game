@@ -15,16 +15,17 @@
     <%= hidden_field_tag :letters, @letters %>
     <%= hidden_field_tag :start_time, @start_time %>
     <input
-      type="text"
-      name="answer"
-      placeholder="Your answer"
-      inputmode="text"
-      autocapitalize="none"
-      autocorrect="off"
-      spellcheck="false"
-      autocomplete="off"
-      class="form-control-lg w-100"
-    >
+        type="text"
+        name="answer"
+        placeholder="Your answer"
+        inputmode="text"
+        autocapitalize="none"
+        autocorrect="off"
+        spellcheck="false"
+        autocomplete="off"
+        autofocus
+        class="form-control-lg w-100"
+        >
       <input type="submit" value="Check!" class="btn btn-primary btn-lg w-100" >
     </form>
   </div>
