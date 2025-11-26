@@ -4,6 +4,7 @@ class GamesController < ApplicationController
   def new
     @letters = LetterGridGenerator.generate
     @start_time = Time.now.to_i
+    WordFinder.for_letters(@letters.join)
   end
 
   def create
@@ -12,20 +13,23 @@ class GamesController < ApplicationController
     answer = params[:answer].downcase.strip
     start_time = params[:start_time].to_i
 
+    word_finder = WordFinder.for_letters(letters.join)
+
     unless answer_in_letters?(answer, letters.dup)
       return redirect_to score_path(
         answer: answer,
         score: 0,
-        message: "Your word uses characters that are not in the grid!"
+        message: "Your word uses characters that are not in the grid!",
+        letters: letters
       )
     end
 
-    json = JSON.parse(URI.open("https://dictionary.lewagon.com/#{answer}").read)
-    unless json["found"]
+    unless word_finder.valid?(answer)
       return redirect_to score_path(
         answer: answer,
         score: 0,
-        message: "Your word is not an english word!"
+        message: "Your word is not an english word!",
+        letters: letters
       )
     end
 
@@ -35,7 +39,8 @@ class GamesController < ApplicationController
     redirect_to score_path(
       answer: answer,
       score: score,
-      message: "Well done!"
+      message: "Well done!",
+      letters: letters
     )
   end
 
@@ -43,6 +48,8 @@ class GamesController < ApplicationController
     @answer = params[:answer]
     @score = params[:score]
     @message = params[:message]
+    @letters = params[:letters]
+    @words = WordFinder.for_letters(@letters.join).all
   end
 
   private

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 # Generates a balanced 10-letter grid using real English letter frequencies
-# Guarantees 2–5 vowels
+# Guarantees 3–5 vowels
 # The average ratio of vowels to consonants in English words, based on letter frequency in general English text (including Y as a vowel), is approximately 40.2% vowels to 59.8% consonants, or about 2:3.
 class LetterGridGenerator
   VOWEL_FREQUENCY = ("A" * 8 + "E" * 12 + "I" * 8 + "O" * 7 + "U" * 4 + "Y" * 2).chars.freeze
@@ -13,7 +13,7 @@ class LetterGridGenerator
     "T" * 9 + "V" * 1 + "W" * 3 + "X" * 1 + "Z" * 1
   ).chars.freeze
 
-  VOWEL_COUNTS = [2, 3, 3, 3, 4, 4, 5].freeze
+  VOWEL_COUNTS = [3, 3, 3, 4, 4, 5].freeze
 
   def self.generate
     vowel_count = VOWEL_COUNTS.sample

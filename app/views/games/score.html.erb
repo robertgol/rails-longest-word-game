@@ -9,5 +9,12 @@
         (Space or Enter)
       </small>
     <% end %>
+    <div class="d-flex flex-wrap justify-content-center gap-1">
+      <% @words.each do |word| %>
+        <div class="badge text-dark bg-light">
+          <%= word.upcase %>
+        </div>
+      <% end %>
+    </div>
   </div>
 </div>
