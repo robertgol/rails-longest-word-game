@@ -12,10 +12,11 @@
     </div>
   </div>
   <!-- Bottom section – same comfortable padding as homepage -->
-  <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5">
-    <div class="text-center">
-      <p class="display-5 fw-bold mb-2"><%= @score %></p>
-      <p class="lead mb-4"><%= @message %></p>
+  <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5 border-top">
+    <div class="text-center d-flex flex-column gap-1">
+      <p class="lead">Your word: <%= @answer %></p>
+      <p class="display-4 fw-bold"><%= @score %></p>
+      <p class="lead"><%= @message %></p>
       <!-- Same button style as homepage, just a bit bigger -->
       <%= link_to root_path,
         class: "btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-3",

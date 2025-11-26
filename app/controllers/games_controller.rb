@@ -19,7 +19,7 @@ class GamesController < ApplicationController
       return redirect_to score_path(
         answer: answer,
         score: 0,
-        message: "Your word uses characters that are not in the grid!",
+        message: "Your word uses characters that were not in the grid!",
         letters: letters
       )
     end
@@ -33,8 +33,8 @@ class GamesController < ApplicationController
       )
     end
 
-    time = end_time - start_time
-    score = (answer.size**2) * (100.0 / time)
+    time = [end_time - start_time, 1].max
+    score = ((answer.size**2) * (100.0 / time)).to_i
 
     redirect_to score_path(
       answer: answer,
