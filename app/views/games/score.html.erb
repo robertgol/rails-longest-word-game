@@ -1,22 +1,30 @@
-<div class="min-vh-100 d-flex flex-column align-items-center justify-content-center p-3 gap-3">
-  <div class="text-center">
-    <h1>Result</h1>
-    <p class="lead">Your score:<%= @score %></p>
-    <p><%= @message %></p>
-    <%= link_to  root_path, class: "btn btn-primary btn-lg", data: { controller: "space-and-enter-to-click" } do %>
-      Try again!
-      <small class="d-block mt-1 opacity-75 d-none d-sm-block">
-        (Space or Enter)
-      </small>
-    <% end %>
+<div class="h-screen-dvh d-flex flex-column">
+  <!-- Fixed top bar -->
+  <div class="flex-shrink-0 bg-white border-bottom px-3 py-3 text-center">
+    <p class="mb-0 lead">Possible words: <%= @words.size %></p>
   </div>
-  <div class="text-center">
-    <p>Possible words:</p>
-    <div class="d-flex flex-wrap justify-content-center gap-1 px-5">
+  <!-- Scrollable word list -->
+  <div class="flex-grow-1 overflow-auto px-3 pt-3 pb-5">
+    <div class="d-flex flex-wrap justify-content-center gap-1">
       <% @words.each do |word| %>
-        <div class="badge text-dark bg-light">
-          <%= word.upcase %>
-        </div>
+        <div class="badge text-dark bg-light"><%= word.upcase %></div>
+      <% end %>
+    </div>
+  </div>
+  <!-- Bottom section – same comfortable padding as homepage -->
+  <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5">
+    <div class="text-center">
+      <p class="display-5 fw-bold mb-2"><%= @score %></p>
+      <p class="lead mb-4"><%= @message %></p>
+      <!-- Same button style as homepage, just a bit bigger -->
+      <%= link_to root_path,
+        class: "btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-3",
+        style: "min-height: 64px;",
+        data: { controller: "space-and-enter-to-click" } do %>
+        <span class="fw-semibold fs-4">Try again!</span>
+        <small class="opacity-75 d-none d-sm-inline">
+          (Space or Enter)
+        </small>
       <% end %>
     </div>
   </div>

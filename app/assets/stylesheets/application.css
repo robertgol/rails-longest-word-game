@@ -13,3 +13,7 @@
  *= require_tree .
  *= require_self
  */
+.h-screen-dvh {
+  height: 100dvh;        /* dynamic viewport height - the modern standard */
+  min-height: 100dvh;
+}
