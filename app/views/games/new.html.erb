@@ -5,7 +5,7 @@
       <p class="lead mb-3">Here are your letters:</p>
       <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
         <% @letters.each do |letter| %>
-          <div class="badge text-dark bg-light">
+          <div class="badge text-dark bg-light user-select-none">
             <%= letter.upcase %>
           </div>
         <% end %>
@@ -16,7 +16,7 @@
       <%= hidden_field_tag :letters, @letters %>
       <%= hidden_field_tag :start_time, @start_time %>
       <div class="d-flex flex-column gap-3">
-        <input type="text" name="answer" id="answer" placeholder="Your answer" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" autofocus class="form-control form-control-lg text-center fs-2" style="height: 64px">
+        <input type="text" name="answer" id="answer" placeholder="Your answer" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" autofocus class="form-control form-control-lg text-center fs-2" style="height: 64px" data-controller="no-paste">
         <button type="submit" class="btn btn-primary btn-lg fs-4 fw-semibold" style="height: 64px">
           Check!
         </button>
