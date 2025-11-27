@@ -14,6 +14,9 @@
   <!-- Bottom section – same comfortable padding as homepage -->
   <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5 border-top">
     <div class="text-center d-flex flex-column gap-1">
+      <p class="lead"><%= @letters.join(" ") %></p>
+      <p class="lead">Set diffuculty multiplier: <%= @score_multiplier %></p>
+      <p class="lead">Quickness multiplier: <%= @quickness_multiplier %></p>
       <p class="lead">Your word: <%= @answer %></p>
       <p class="display-4 fw-bold"><%= @score %> pts</p>
       <p class="lead"><%= @message %></p>

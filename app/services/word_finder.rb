@@ -48,7 +48,8 @@ class WordFinder
         cache_key,
         {
           words: instance.all,
-          letter_counts: instance.instance_variable_get(:@letter_counts)
+          letter_counts: instance.instance_variable_get(:@letter_counts),
+          score_multiplier: instance.score_multiplier
         },
         expires_in: INSTANCE_CACHE_EXPIRES
       )
@@ -105,6 +106,22 @@ class WordFinder
     @valid_words_set.size
   end
 
+  # Calculate the difficulty-based score multiplier for this letter set.
+  # The multiplier accounts for both word count and scoring potential (word lengths).
+  # Harder sets (fewer words, shorter words) get higher multipliers.
+  #
+  # This value is cached with the instance to avoid recalculating.
+  #
+  # @return [Float] score multiplier (typically 0.7 to 1.8)
+  # @example
+  #   finder = WordFinder.for_letters("gardenpils")
+  #   multiplier = finder.score_multiplier  # => 1.32
+  #   base_score = (answer.size**2) * (100.0 / time)
+  #   final_score = (base_score * multiplier).to_i
+  def score_multiplier
+    @score_multiplier ||= ScoreMultiplier.calculate(@sorted_words)
+  end
+
   private
 
   # Normalize letters: lowercase, remove non-alphabetic characters
@@ -124,6 +141,10 @@ class WordFinder
     instance.instance_variable_set(:@letter_counts, cached_data[:letter_counts])
     instance.instance_variable_set(:@sorted_words, cached_data[:words])
     instance.instance_variable_set(:@valid_words_set, cached_data[:words].to_set)
+    # Cache the score multiplier if available (for backward compatibility with old cache entries)
+    if cached_data[:score_multiplier]
+      instance.instance_variable_set(:@score_multiplier, cached_data[:score_multiplier])
+    end
     instance
   end
 
@@ -164,4 +185,226 @@ class WordFinder
         .to_a
     end
   end
+end
+
+# ScoreMultiplier calculates a difficulty-based score multiplier for a set of words.
+#
+# The multiplier is based on two factors:
+# 1. Word Count: Fewer words = harder set = higher multiplier
+# 2. Score Potential: Shorter words = lower max scores = harder set = higher multiplier
+#
+# The score potential is calculated as the average of (word_length²) because the scoring
+# formula is (length²) * (100/time), so longer words contribute exponentially more to scores.
+#
+# Both factors are normalized using logarithmic scaling to handle wide ranges smoothly,
+# then combined with configurable weights to produce the final multiplier.
+#
+# Usage:
+#
+#   words = ["cat", "dog", "house", "gardenias"]
+#   multiplier = ScoreMultiplier.calculate(words)
+#   # => 1.32 (example: harder set gets higher multiplier)
+#
+#   # Use in score calculation:
+#   base_score = (answer.size**2) * (100.0 / time)
+#   final_score = (base_score * multiplier).to_i
+#
+# Configuration:
+#
+# All parameters can be adjusted via the CONFIG constant. See the configuration section
+# below for detailed adjustment guidelines.
+#
+class ScoreMultiplier
+  # Configuration hash for all tunable parameters.
+  # Adjust these values to fine-tune the difficulty scaling.
+  #
+  # Word Count Bounds:
+  #   - min_words: Minimum expected word count (very hard sets)
+  #   - max_words: Maximum expected word count (very easy sets)
+  #   Typical range observed: 50-2000 words
+  #
+  # Score Potential Bounds:
+  #   - min_score_potential: Minimum average of (length²) (very short words)
+  #   - max_score_potential: Maximum average of (length²) (many long words)
+  #   Examples:
+  #     - 3-letter average = 9
+  #     - 5-letter average = 25
+  #     - 9-letter average = 81
+  #
+  # Component Weights:
+  #   - word_count_weight: How much word count matters (0.0 to 1.0)
+  #   - score_potential_weight: How much word length matters (0.0 to 1.0)
+  #   These should sum to 1.0 for balanced contribution, but don't have to.
+  #
+  # Multiplier Range:
+  #   - min_multiplier: Multiplier for easiest sets (typically < 1.0 to reduce scores)
+  #   - max_multiplier: Multiplier for hardest sets (typically > 1.0 to boost scores)
+  #   - base_multiplier: Baseline multiplier (typically 1.0)
+  #
+  CONFIG = {
+    # Word count bounds (observed range: ~50-2000 words)
+    min_words: 60,
+    max_words: 1100,
+
+    # Score potential bounds (average of length²)
+    # Typical: 3-letter words = 9, 5-letter = 25, 9-letter = 81
+    min_score_potential: 10,
+    max_score_potential: 70,
+
+    # Component weights (how much each factor contributes)
+    # These can sum to any value, but 1.0 gives balanced contribution
+    word_count_weight: 0.5,
+    score_potential_weight: 0.5,
+
+    # Multiplier range
+    min_multiplier: 0.5,      # Easiest sets get 0.7x score
+    max_multiplier: 2.8,      # Hardest sets get 1.8x score
+    base_multiplier: 1.0      # Baseline (middle difficulty)
+  }.freeze
+
+  # ============================================================================
+  # ADJUSTMENT GUIDE
+  # ============================================================================
+  #
+  # How to adjust the configuration for your needs:
+  #
+  # 1. ADJUSTING MULTIPLIER RANGE (min_multiplier, max_multiplier)
+  #    - If scores feel too high across the board: decrease max_multiplier
+  #    - If scores feel too low: increase max_multiplier
+  #    - If easy sets are still scoring too high: decrease min_multiplier
+  #    - Typical range: 0.5x to 2.5x
+  #
+  # 2. ADJUSTING WORD COUNT BOUNDS (min_words, max_words)
+  #    - If you see sets with < 50 words: decrease min_words
+  #    - If you see sets with > 2000 words: increase max_words
+  #    - These bounds define the "hardest" and "easiest" word counts
+  #    - Use logarithmic scaling, so wide ranges work well
+  #
+  # 3. ADJUSTING SCORE POTENTIAL BOUNDS (min_score_potential, max_score_potential)
+  #    - Calculate: average of (word_length²) for your word sets
+  #    - If most sets have short words (avg 3-4 letters): decrease max_score_potential
+  #    - If many sets have long words (avg 8-9 letters): increase max_score_potential
+  #    - Typical values: 10 (very short) to 70 (many long words)
+  #
+  # 4. ADJUSTING COMPONENT WEIGHTS (word_count_weight, score_potential_weight)
+  #    - If word count matters more: increase word_count_weight, decrease score_potential_weight
+  #    - If word length matters more: increase score_potential_weight, decrease word_count_weight
+  #    - They don't need to sum to 1.0, but doing so gives balanced contribution
+  #    - Example: word_count_weight: 0.7, score_potential_weight: 0.3 (emphasize count)
+  #
+  # 5. TESTING YOUR CHANGES
+  #    - Test with known easy sets (many long words): should get low multiplier (~0.7-0.9)
+  #    - Test with known hard sets (few short words): should get high multiplier (~1.5-1.8)
+  #    - Test with medium sets: should get middle multiplier (~1.0-1.2)
+  #
+  # 6. OVERRIDING CONFIG FOR TESTING
+  #    - You can pass a custom config hash to calculate():
+  #      custom_config = ScoreMultiplier::CONFIG.merge(max_multiplier: 2.0)
+  #      ScoreMultiplier.calculate(words, config: custom_config)
+  #
+  # ============================================================================
+
+  # Calculate the difficulty-based score multiplier for a list of words.
+  #
+  # @param words [Array<String>] array of words to analyze
+  # @param config [Hash] optional configuration override (defaults to CONFIG)
+  # @return [Float] score multiplier (typically 0.7 to 1.8)
+  #
+  # @example
+  #   # Easy set: many long words
+  #   words = ["gardenias", "panelised", "gardens", "panel", "garden", "panels"] * 100
+  #   ScoreMultiplier.calculate(words)  # => ~0.8 (lower multiplier = easier)
+  #
+  #   # Hard set: few short words
+  #   words = ["cat", "dog", "bat", "rat"]
+  #   ScoreMultiplier.calculate(words)  # => ~1.6 (higher multiplier = harder)
+  def self.calculate(words, config: CONFIG)
+    return config[:base_multiplier] if words.empty?
+
+    word_count = words.size
+    score_potential = calculate_score_potential(words)
+
+    # Normalize each component using logarithmic scaling
+    word_count_norm = normalize_log(
+      word_count,
+      config[:min_words],
+      config[:max_words]
+    )
+
+    score_potential_norm = normalize_log(
+      score_potential,
+      config[:min_score_potential],
+      config[:max_score_potential]
+    )
+
+    # Combine components with weights
+    combined_difficulty = (
+      word_count_norm * config[:word_count_weight] +
+      score_potential_norm * config[:score_potential_weight]
+    )
+
+    # Normalize combined difficulty to multiplier range
+    # Clamp to [0, 1] range first to handle edge cases
+    combined_difficulty = [[combined_difficulty, 0.0].max, 1.0].min
+
+    # Map to multiplier range: 0.0 -> min_multiplier, 1.0 -> max_multiplier
+    multiplier_range = config[:max_multiplier] - config[:min_multiplier]
+    config[:min_multiplier] + (combined_difficulty * multiplier_range)
+  end
+
+  # Calculate the score potential of a word list.
+  # Score potential is the average of (word_length²) because the scoring formula
+  # uses length², so this reflects the theoretical scoring ceiling.
+  #
+  # @param words [Array<String>] array of words
+  # @return [Float] average of (word_length²) for all words
+  #
+  # @example
+  #   words = ["cat", "house", "gardenias"]
+  #   # lengths: 3, 5, 9
+  #   # squared: 9, 25, 81
+  #   # average: (9 + 25 + 81) / 3 = 38.33
+  def self.calculate_score_potential(words)
+    return 0.0 if words.empty?
+
+    total_squared_length = words.sum { |word| word.length**2 }
+    total_squared_length.to_f / words.size
+  end
+
+  # Normalize a value using logarithmic scaling between min and max bounds.
+  # Returns a value between 0.0 (at max) and 1.0 (at min).
+  #
+  # This uses logarithmic scaling because:
+  # - It handles wide ranges smoothly (e.g., 50-2000 words)
+  # - It provides diminishing returns (going from 50->100 is bigger than 1000->1100)
+  # - It prevents extreme outliers from dominating
+  #
+  # @param value [Numeric] value to normalize
+  # @param min [Numeric] minimum bound (hardest/easiest depending on context)
+  # @param max [Numeric] maximum bound (easiest/hardest depending on context)
+  # @return [Float] normalized value between 0.0 and 1.0
+  #
+  # @example
+  #   # Word count: fewer words = harder = higher normalized value
+  #   normalize_log(100, 50, 2000)  # => ~0.65 (closer to min = harder)
+  #   normalize_log(1000, 50, 2000) # => ~0.19 (closer to max = easier)
+  def self.normalize_log(value, min, max)
+    # Handle edge cases
+    return 1.0 if value <= min
+    return 0.0 if value >= max
+
+    # Clamp value to bounds for safety
+    clamped_value = [[value, min].max, max].min
+
+    # Logarithmic normalization formula:
+    # normalized = (log(max) - log(value)) / (log(max) - log(min))
+    # This gives 1.0 at min and 0.0 at max
+    log_min = Math.log(min)
+    log_max = Math.log(max)
+    log_value = Math.log(clamped_value)
+
+    (log_max - log_value) / (log_max - log_min)
+  end
+
+  private_class_method :normalize_log, :calculate_score_potential
 end

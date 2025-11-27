@@ -20,7 +20,8 @@ class GamesController < ApplicationController
         answer: answer,
         score: 0,
         message: "Your word uses characters that were not in the grid!",
-        letters: letters
+        letters: letters,
+        quickness_multiplier: 0
       )
     end
 
@@ -29,18 +30,22 @@ class GamesController < ApplicationController
         answer: answer,
         score: 0,
         message: "Your word is not an english word!",
-        letters: letters
+        letters: letters,
+        quickness_multiplier: 0
       )
     end
 
     time = [end_time - start_time, 1].max
-    score = ((answer.size**2) * (100.0 / time)).to_i
+    # Smooth curve: 5.0× at 1s → 0.5× at 30s
+    quickness_multiplier = (5.0**(1.0 - time / 30.0)).round(2)
+    score = ((answer.size**2) * quickness_multiplier * word_finder.score_multiplier.round(2)).round(2)
 
     redirect_to score_path(
       answer: answer,
       score: score,
       message: "Well done!",
-      letters: letters
+      letters: letters,
+      quickness_multiplier: quickness_multiplier
     )
   end
 
@@ -49,7 +54,10 @@ class GamesController < ApplicationController
     @score = params[:score]
     @message = params[:message]
     @letters = params[:letters]
-    @words = WordFinder.for_letters(@letters.join).all
+    @quickness_multiplier = params[:quickness_multiplier]
+    word_finder = WordFinder.for_letters(@letters.join)
+    @score_multiplier = word_finder.score_multiplier.round(2)
+    @words = word_finder.all
   end
 
   private
