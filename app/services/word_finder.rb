@@ -180,9 +180,10 @@ class WordFinder
       end
 
       File.readlines(WORD_LIST_PATH, chomp: true)
-        .map { |line| line.downcase.gsub(/[^a-z]/, "") }
-        .reject(&:empty?)
-        .to_a
+      # don't need all that - assume the input file is cleaned
+      # .map { |line| line.downcase.gsub(/[^a-z]/, "") }
+      # .reject(&:empty?)
+      # .to_a
     end
   end
 end
@@ -243,8 +244,8 @@ class ScoreMultiplier
   #
   CONFIG = {
     # Word count bounds (observed range: ~50-2000 words)
-    min_words: 60,
-    max_words: 1100,
+    min_words: 35,
+    max_words: 1000,
 
     # Score potential bounds (average of length²)
     # Typical: 3-letter words = 9, 5-letter = 25, 9-letter = 81

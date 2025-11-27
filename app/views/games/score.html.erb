@@ -1,35 +1,37 @@
-<div class="h-screen-dvh d-flex flex-column">
-  <!-- Fixed top bar -->
-  <div class="flex-shrink-0 bg-white border-bottom px-3 py-3 text-center">
-    <p class="mb-0 lead">Possible words: <%= @words.size %></p>
-  </div>
-  <!-- Scrollable word list -->
-  <div class="flex-grow-1 overflow-auto px-3 pt-3 pb-5">
-    <div class="d-flex flex-wrap justify-content-center gap-1">
-      <% @words.each do |word| %>
-        <div class="badge text-dark <%= word == @answer ? 'bg-success' : 'bg-light' %>"><%= word.upcase %></div>
-      <% end %>
+<div class="container" >
+  <div class="h-screen-dvh d-flex flex-column">
+    <!-- Fixed top bar -->
+    <div class="flex-shrink-0 bg-white border-bottom px-3 py-3 text-center">
+      <p class="mb-0 lead">Possible words: <%= @words.size %></p>
     </div>
-  </div>
-  <!-- Bottom section – same comfortable padding as homepage -->
-  <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5 border-top">
-    <div class="text-center d-flex flex-column gap-1">
-      <p class="lead"><%= @letters.join(" ") %></p>
-      <p class="lead">Set diffuculty multiplier: <%= @score_multiplier %></p>
-      <p class="lead">Quickness multiplier: <%= @quickness_multiplier %></p>
-      <p class="lead">Your word: <%= @answer %></p>
-      <p class="display-4 fw-bold"><%= @score %> pts</p>
-      <p class="lead"><%= @message %></p>
-      <!-- Same button style as homepage, just a bit bigger -->
-      <%= link_to root_path,
+    <!-- Scrollable word list -->
+    <div class="flex-grow-1 overflow-auto px-3 pt-3 pb-5">
+      <div class="d-flex flex-wrap justify-content-center gap-1">
+        <% @words.each do |word| %>
+          <div class="badge text-dark <%= word == @answer ? 'bg-success' : 'bg-light' %>"><%= word.upcase %></div>
+        <% end %>
+      </div>
+    </div>
+    <!-- Bottom section – same comfortable padding as homepage -->
+    <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5 border-top">
+      <div class="text-center d-flex flex-column gap-1">
+        <p class="lead"><%= @letters.join(" ") %></p>
+        <p class="lead">Set diffuculty multiplier: <%= @score_multiplier %></p>
+        <p class="lead">Quickness multiplier: <%= @quickness_multiplier %></p>
+        <p class="lead">Your word: <%= @answer %></p>
+        <p class="display-4 fw-bold"><%= @score %> pts</p>
+        <p class="lead"><%= @message %></p>
+        <!-- Same button style as homepage, just a bit bigger -->
+        <%= link_to root_path,
         class: "btn btn-primary btn-lg w-100 d-flex align-items-center justify-content-center gap-3",
         style: "min-height: 64px;",
         data: { controller: "space-and-enter-to-click" } do %>
-        <span class="fw-semibold fs-4">Try again!</span>
-        <small class="opacity-75 d-none d-sm-inline">
-          (Space or Enter)
-        </small>
-      <% end %>
+          <span class="fw-semibold fs-4">Try again!</span>
+          <small class="opacity-75 d-none d-sm-inline">
+            (Space or Enter)
+          </small>
+        <% end %>
+      </div>
     </div>
   </div>
 </div>

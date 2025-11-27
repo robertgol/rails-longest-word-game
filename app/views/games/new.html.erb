@@ -1,24 +1,26 @@
-<div class="h-screen-dvh d-flex flex-column justify-content-end p-3 pb-5">
-  <div class="text-center mb-5">
-    <h1 class="display-5 fw-bold mb-3">Welcome to the longest word-game!</h1>
-    <p class="lead mb-3">Here are your letters:</p>
-    <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
-      <% @letters.each do |letter| %>
-        <div class="badge text-dark bg-light">
-          <%= letter.upcase %>
-        </div>
-      <% end %>
+<div class="container">
+  <div class="h-screen-dvh d-flex flex-column justify-content-end p-3 pb-5">
+    <div class="text-center mb-5">
+      <h1 class="display-5 fw-bold mb-3">Welcome to the longest word-game!</h1>
+      <p class="lead mb-3">Here are your letters:</p>
+      <div class="d-flex flex-wrap justify-content-center gap-2 mb-4">
+        <% @letters.each do |letter| %>
+          <div class="badge text-dark bg-light">
+            <%= letter.upcase %>
+          </div>
+        <% end %>
+      </div>
     </div>
+    <form action="<%= create_score_path %>" method="post" class="w-100">
+      <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+      <%= hidden_field_tag :letters, @letters %>
+      <%= hidden_field_tag :start_time, @start_time %>
+      <div class="d-flex flex-column gap-3">
+        <input type="text" name="answer" id="answer" placeholder="Your answer" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" autofocus class="form-control form-control-lg text-center fs-2" style="height: 64px">
+        <button type="submit" class="btn btn-primary btn-lg fs-4 fw-semibold" style="height: 64px">
+          Check!
+        </button>
+      </div>
+    </form>
   </div>
-  <form action="<%= create_score_path %>" method="post" class="w-100">
-    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-    <%= hidden_field_tag :letters, @letters %>
-    <%= hidden_field_tag :start_time, @start_time %>
-    <div class="d-flex flex-column gap-3">
-      <input type="text" name="answer" id="answer" placeholder="Your answer" inputmode="text" autocapitalize="none" autocorrect="off" spellcheck="false" autocomplete="off" autofocus class="form-control form-control-lg text-center fs-2" style="height: 64px">
-      <button type="submit" class="btn btn-primary btn-lg fs-4 fw-semibold" style="height: 64px">
-        Check!
-      </button>
-    </div>
-  </form>
 </div>
