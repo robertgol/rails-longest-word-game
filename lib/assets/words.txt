@@ -21800,7 +21800,6 @@ arzava
 arzawa
 arzrunite
 as
-as
 asa
 asaddle
 asafetida
@@ -338168,7 +338167,6 @@ thawville
 thaxter
 thaxton
 the
-the
 thea
 theaceae
 theaceous
@@ -342549,7 +342547,6 @@ tmemata
 tmeses
 tmesipteris
 tmesis
-to
 to
 toaalta
 toabaja
