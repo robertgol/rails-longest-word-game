@@ -7,7 +7,7 @@
   <div class="flex-grow-1 overflow-auto px-3 pt-3 pb-5">
     <div class="d-flex flex-wrap justify-content-center gap-1">
       <% @words.each do |word| %>
-        <div class="badge text-dark bg-light"><%= word.upcase %></div>
+        <div class="badge text-dark <%= word == @answer ? 'bg-success' : 'bg-light' %>"><%= word.upcase %></div>
       <% end %>
     </div>
   </div>
@@ -15,7 +15,7 @@
   <div class="flex-shrink-0 bg-white px-3 pt-4 pb-5 border-top">
     <div class="text-center d-flex flex-column gap-1">
       <p class="lead">Your word: <%= @answer %></p>
-      <p class="display-4 fw-bold"><%= @score %></p>
+      <p class="display-4 fw-bold"><%= @score %> pts</p>
       <p class="lead"><%= @message %></p>
       <!-- Same button style as homepage, just a bit bigger -->
       <%= link_to root_path,

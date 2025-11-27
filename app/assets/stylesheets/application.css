@@ -17,3 +17,8 @@
   height: 100dvh;        /* dynamic viewport height - the modern standard */
   min-height: 100dvh;
 }
+
+/* Green glow for the user's answer */
+.user-answer {
+  color: #155724 !important;
+}
