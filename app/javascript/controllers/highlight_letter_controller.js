@@ -20,26 +20,34 @@ export default class extends Controller {
 
   updateHighlightsAndValidity() {
     const word = this.inputTarget.value.toLowerCase()
-    const isValid = this.isWordValid(word)
 
-    // Visual feedback on input
-    if (isValid) {
-      this.inputTarget.classList.remove("invalid")
-    } else {
-      this.inputTarget.classList.add("invalid")
-      // Auto-remove after short animation
-      clearTimeout(this.timeout)
-      this.timeout = setTimeout(() => {
-        this.inputTarget.classList.remove("invalid")
-      }, 600)
+    // Find the length of the longest valid prefix
+    let validLength = 0
+    const count = {}
+
+    for (let i = 0; i < word.length; i++) {
+      const char = word[i]
+      if (!this.available[char]) break
+
+      count[char] = (count[char] || 0) + 1
+      if (count[char] > this.available[char]) break
+
+      validLength = i + 1
     }
 
-    // Update letter highlights
+    // Apply red color only to the invalid part (from validLength to end)
+    if (validLength < word.length) {
+      this.inputTarget.classList.add("invalid-suffix")
+    } else {
+      this.inputTarget.classList.remove("invalid-suffix")
+    }
+
+    // Keep the existing letter highlighting (unchanged)
     this.resetHighlights()
     if (word.length === 0) return
 
     const used = {}
-    for (const char of word) {
+    for (const char of word.slice(0, validLength)) {
       if (this.available[char]) used[char] = (used[char] || 0) + 1
     }
 

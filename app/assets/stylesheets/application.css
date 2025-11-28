@@ -29,13 +29,11 @@
   border: 1px solid #c3e6cb;
 }
 
-.form-control.invalid {
-  border-color: #dc3545 !important;
-  animation: shake 0.6s ease-in-out;
-}
+/* Normal text - black */
+#answer { color: black; caret-color: black; }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-10px); }
-  40%, 80% { transform: translateX(10px); }
+/* Invalid suffix - red */
+#answer.invalid-suffix {
+  color: red;
+  caret-color: red;   /* so the cursor is also red while typing more bad letters */
 }
